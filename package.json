@@ -1,8 +1,12 @@
 {
   "name": "shintech-ebay",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "main": "build/index.js",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shintech/shintech-ebay.git"
+  },
   "scripts": {
     "build": "babel -D -d build/ src/",
     "prepublish": "npm run build"
