@@ -1,0 +1,37 @@
+{
+  "name": "shintech-ebay",
+  "version": "0.0.2",
+  "main": "build/index.js",
+  "license": "MIT",
+  "scripts": {
+    "build": "babel -D -d build/ src/",
+    "prepublish": "npm run build"
+  },
+  "dependencies": {
+    "chalk": "^2.1.0",
+    "got": "^8.0.1",
+    "handlebars": "^4.0.11",
+    "winston": "^2.3.1",
+    "xml2js": "^0.4.19"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.23.0",
+    "babel-preset-env": "^1.6.1"
+  },
+  "standard": {
+    "globals": [
+      "it",
+      "describe",
+      "beforeEach",
+      "afterEach",
+      "before",
+      "after",
+      "Backbone",
+      "_",
+      "$"
+    ]
+  },
+  "engines": {
+    "node": ">=6"
+  }
+}

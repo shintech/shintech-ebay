@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<AddItemsRequest xmlns="urn:ebay:apis:eBLBaseComponents">
+  <RequesterCredentials>
+    <eBayAuthToken>{{ opts.EBAY_TOKEN }}</eBayAuthToken>
+  </RequesterCredentials>
+  <Version>967</Version>
+  <ErrorLanguage>en_US</ErrorLanguage>
+  <WarningLevel>High</WarningLevel>
+    {{#each products}}
+    <AddItemRequestContainer>
+      <MessageID>{{ messageID }}</MessageID>
+      <Item>
+        <Title>{{ description }}</Title>
+        <Description>{{ longDescription }}</Description>
+        <PrimaryCategory>
+          <CategoryID>{{ categoryID }}</CategoryID>
+        </PrimaryCategory>
+        <CategoryMappingAllowed>true</CategoryMappingAllowed>
+        <Site>US</Site>
+        <Quantity>{{ quantity }}</Quantity>
+        <StartPrice>{{ price }}</StartPrice>
+        <ListingDuration>Days_{{ listingDuration }}</ListingDuration>
+        <DispatchTimeMax>3</DispatchTimeMax>
+        <ShippingDetails>
+          <ShippingType>Flat</ShippingType>
+          <ShippingServiceOptions>
+            <ShippingServicePriority>1</ShippingServicePriority>
+            <ShippingService>USPSMedia</ShippingService>
+            <ShippingServiceCost>2.50</ShippingServiceCost>
+          </ShippingServiceOptions>
+        </ShippingDetails>
+        <ReturnPolicy>
+          <ReturnsAcceptedOption>ReturnsAccepted</ReturnsAcceptedOption>
+          <RefundOption>MoneyBack</RefundOption>
+          <ReturnsWithinOption>Days_30</ReturnsWithinOption>
+          <Description>Text description of return policy details</Description>
+          <ShippingCostPaidByOption>Buyer</ShippingCostPaidByOption>
+        </ReturnPolicy>
+        <Country>US</Country>
+        <Currency>USD</Currency>
+        <PostalCode>67337</PostalCode>
+        <PaymentMethods>PayPal</PaymentMethods>
+        <PayPalEmailAddress>mprather1@gmail.com</PayPalEmailAddress>
+        <PictureDetails>
+          <PictureURL>{{ image }}</PictureURL>
+        </PictureDetails>
+      </Item>
+  </AddItemRequestContainer>
+      
+    {{/each}}
+</AddItemsRequest>
