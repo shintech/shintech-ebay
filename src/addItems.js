@@ -20,7 +20,7 @@ const opts = {
   EMAIL: process.env['EMAIL']
 }
 
-export default function (raw) {
+export default function (raw, callback) {
   fs.readFile(path.join(templates, 'addItems.xml'), 'utf-8', (err, src) => {
     if (err) return console.error(err)
     Handlebars.registerHelper('messageID', (result) => {
@@ -40,8 +40,8 @@ export default function (raw) {
       })
 
       sendXML(output, (err, response) => {
-        if (err) throw new Error(err)
-        console.log(response.body)
+        if (err) return callback(err)
+        callback(null, response.body)
       })
     }
   })
