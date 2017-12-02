@@ -1,11 +1,13 @@
 import got from 'got'
-// import {parseString} from 'xml2js'
+import {parseString} from 'xml2js'
 import Handlebars from 'handlebars'
 import fs from 'fs'
 import path from 'path'
 
 const environment = process.env['NODE_ENV']
-const templates = path.join(path.dirname(__dirname), 'templates')
+
+const templates = path.join((path.dirname(__dirname)), 'templates')
+
 const ebayEnvironments = {
   development: 'https://api.sandbox.ebay.com/ws/api.dll',
   production: 'https://api.ebay.com/ws/api.dll'
@@ -31,6 +33,10 @@ export default function (raw, callback) {
       return '13677'
     })
 
+    Handlebars.registerHelper('listingDuration', (result) => {
+      return 'Days_1'
+    })
+
     while (raw.length) {
       var products = raw.splice(0, 5)
       const template = Handlebars.compile(src)
@@ -41,7 +47,7 @@ export default function (raw, callback) {
 
       sendXML(output, (err, response) => {
         if (err) return callback(err)
-        callback(null, response.body)
+        callback(null, response)
       })
     }
   })
@@ -54,10 +60,25 @@ function sendXML (body, callback) {
     headers: getHeaders(opts)
   })
   .then(data => {
-    callback(null, data)
+    parseXMLResponse(data.body, callback)
   })
   .catch(err => {
     callback(err)
+  })
+}
+
+function parseXMLResponse (xml, callback) {
+  parseString(xml, (err, result) => {
+    if (err) return callback(err)
+    var response = result['AddItemsResponse']
+    if (response['Errors'] && response['AddItemResponseContainer'] && response['AddItemResponseContainer'][0].Errors) {
+      callback({ // eslint-disable-line
+        err: response['Errors'],
+        response: response['AddItemResponseContainer'][0].Errors // Doesn't print all errors
+      })
+    } else {
+      callback(null, response)
+    }
   })
 }
 

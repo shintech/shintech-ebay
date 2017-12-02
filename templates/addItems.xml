@@ -19,7 +19,7 @@
         <Site>US</Site>
         <Quantity>{{ quantity }}</Quantity>
         <StartPrice>{{ price }}</StartPrice>
-        <ListingDuration>Days_{{ listingDuration }}</ListingDuration>
+        <ListingDuration>{{ listingDuration }}</ListingDuration>
         <DispatchTimeMax>3</DispatchTimeMax>
         <ShippingDetails>
           <ShippingType>Flat</ShippingType>
