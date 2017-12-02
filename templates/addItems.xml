@@ -5,7 +5,7 @@
   </RequesterCredentials>
   <Version>967</Version>
   <ErrorLanguage>en_US</ErrorLanguage>
-  <WarningLevel>High</WarningLevel>
+  <WarningLevel>Low</WarningLevel>
     {{#each products}}
     <AddItemRequestContainer>
       <MessageID>{{ messageID }}</MessageID>
@@ -18,7 +18,7 @@
         <CategoryMappingAllowed>true</CategoryMappingAllowed>
         <Site>US</Site>
         <Quantity>{{ quantity }}</Quantity>
-        <StartPrice>{{ price }}</StartPrice>
+        <StartPrice currencyID="USD">{{ price }}</StartPrice>
         <ListingDuration>{{ listingDuration }}</ListingDuration>
         <DispatchTimeMax>3</DispatchTimeMax>
         <ShippingDetails>
@@ -36,12 +36,15 @@
           <Description>Text description of return policy details</Description>
           <ShippingCostPaidByOption>Buyer</ShippingCostPaidByOption>
         </ReturnPolicy>
+        <ListingType>FixedPriceItem</ListingType>
         <Country>US</Country>
         <Currency>USD</Currency>
         <PostalCode>67337</PostalCode>
         <PaymentMethods>PayPal</PaymentMethods>
         <PayPalEmailAddress>mprather1@gmail.com</PayPalEmailAddress>
         <PictureDetails>
+          <GalleryType>Gallery</GalleryType>
+          <GalleryURL>{{ image }}</GalleryURL>
           <PictureURL>{{ image }}</PictureURL>
         </PictureDetails>
       </Item>

@@ -34,7 +34,14 @@ export default function (raw, callback) {
     })
 
     Handlebars.registerHelper('listingDuration', (result) => {
-      return 'Days_1'
+      return 'Days_3'
+    })
+
+    Handlebars.registerHelper('buyItNowPrice', (result) => {
+      const products = result['data'].root.products
+      const price = parseInt(products[result['data'].key].price)
+
+      return (price + (price * 0.4)).toFixed(2)
     })
 
     while (raw.length) {
@@ -71,14 +78,7 @@ function parseXMLResponse (xml, callback) {
   parseString(xml, (err, result) => {
     if (err) return callback(err)
     var response = result['AddItemsResponse']
-    if (response['Errors'] && response['AddItemResponseContainer'] && response['AddItemResponseContainer'][0].Errors) {
-      callback({ // eslint-disable-line
-        err: response['Errors'],
-        response: response['AddItemResponseContainer'][0].Errors // Doesn't print all errors
-      })
-    } else {
-      callback(null, response)
-    }
+    callback(null, response)
   })
 }
 
