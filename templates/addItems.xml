@@ -39,9 +39,9 @@
         <ListingType>FixedPriceItem</ListingType>
         <Country>US</Country>
         <Currency>USD</Currency>
-        <PostalCode>67337</PostalCode>
+        <PostalCode>01243</PostalCode>
         <PaymentMethods>PayPal</PaymentMethods>
-        <PayPalEmailAddress>mprather1@gmail.com</PayPalEmailAddress>
+        <PayPalEmailAddress>{{ opts.EMAIL }}</PayPalEmailAddress>
         <PictureDetails>
           <GalleryType>Gallery</GalleryType>
           <GalleryURL>{{ image }}</GalleryURL>

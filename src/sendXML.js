@@ -34,9 +34,7 @@ export default function (body, type, callback) {
 function parseXMLResponse (xml, callback) {
   parseString(xml, (err, result) => {
     if (err) return callback(err)
-    var response = result
-    console.log(response)
-    callback(null, response)
+    callback(null, result)
   })
 }
 
