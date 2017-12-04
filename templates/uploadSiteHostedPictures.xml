@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UploadSiteHostedPicturesRequest xmlns="urn:ebay:apis:eBLBaseComponents">
+  <RequesterCredentials>
+    <eBayAuthToken>{{ opts.EBAY_TOKEN }}</eBayAuthToken>
+  </RequesterCredentials>
+  <WarningLevel>Low</WarningLevel>
+  <Version>967</Version>
+  <ErrorLanguage>en_US</ErrorLanguage>  
+  <ExternalPictureURL>{{ IMAGE_SERVER_URL }}{{ image }}</ExternalPictureURL>
+  <PictureName>{{ imageName }}</PictureName>
+</UploadSiteHostedPicturesRequest>
