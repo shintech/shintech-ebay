@@ -10,6 +10,7 @@
     <AddItemRequestContainer>
       <MessageID>{{ messageID }}</MessageID>
       <Item>
+        <SKU>{{ number }}</SKU>
         <Title>{{ description }}</Title>
         <Description>{{ longDescription }}</Description>
         <PrimaryCategory>

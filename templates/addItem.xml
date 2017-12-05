@@ -6,6 +6,8 @@
   <ErrorLanguage>en_US</ErrorLanguage>
   <WarningLevel>Low</WarningLevel>
   <Item>
+    <SKU>{{ product.number }}</SKU>    
+    <Title>{{ product.title }}</Title>
     <ConditionID>1000</ConditionID>
     <CategoryMappingAllowed>true</CategoryMappingAllowed>
     <Country>US</Country>
@@ -45,6 +47,5 @@
     </ShippingDetails>
     <Site>US</Site>
     <StartPrice currencyID="USD">{{ product.price }}</StartPrice>
-    <Title>{{ product.title }}</Title>
   </Item>
 </AddItemRequest>
