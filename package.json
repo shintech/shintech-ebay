@@ -1,6 +1,6 @@
 {
   "name": "shintech-ebay",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "main": "build/index.js",
   "license": "MIT",
   "repository": {
@@ -11,12 +11,6 @@
     "build": "babel -D -d build/ src/",
     "prepublish": "npm run build",
     "watch": "babel --watch -d build src | ts '[%Y-%m-%d %H:%M:%S]'"
-  },
-  "dependencies": {
-    "chalk": "^2.1.0",
-    "got": "^8.0.1",
-    "winston": "^2.3.1",
-    "xml2js": "^0.4.19"
   },
   "devDependencies": {
     "babel-cli": "^6.23.0",

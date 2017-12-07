@@ -1,6 +1,5 @@
 import sendXML from './sendXML'
-import xml2js from 'xml2js'
-import _ from 'lodash'
+import xmlbuilder from 'xmlbuilder'
 
 const opts = {
   EBAY_API: process.env['EBAY_API'],
@@ -11,21 +10,21 @@ const opts = {
   EMAIL: process.env['EMAIL']
 }
 
-var builder = new xml2js.Builder({
-  pretty: true,
-  headless: true
-})
-
 export default async function (raw, callback) {
-  const product = await configProduct(raw)
-  const xml = await configXML(product, raw.number)
-  let response = await sendXML(xml, 'AddItem')
+  const product = await configXML(raw)
+  let response = await sendXML(product, 'AddItem')
   callback(null, response)
 }
 
-function configProduct (product) {
+function configXML (product) {
   return new Promise(function (resolve, reject) {
     var processed = {
+      RequesterCredentials: {
+        eBayAuthToken: opts.EBAY_TOKEN
+      },
+      Version: '967',
+      ErrorLanguage: 'en_US',
+      WarningLevel: 'Low',
       Item: {
         Title: product.description,
         Description: product.longDescription,
@@ -67,28 +66,32 @@ function configProduct (product) {
       }
     }
 
-    resolve(builder.buildObject(processed))
-  })
-}
+    var root = xmlbuilder.create('AddItemRequest',
+      {version: '1.0', encoding: 'UTF-8'},
+      {pubID: null, sysID: null},
+      {skipNullAttributes: false,
+        headless: false,
+        ignoreDecorators: false,
+        separateArrayItems: false,
+        noDoubleEncoding: false,
+        stringify: {}}
+      )
 
-function configXML (product, number) {
-  return new Promise(function (resolve, reject) {
-    var template = _.template(`
-<?xml version="1.0" encoding="utf-8"?>
-<AddItemRequest xmlns="urn:ebay:apis:eBLBaseComponents">
-  <RequesterCredentials>
-      <eBayAuthToken><%- opts.EBAY_TOKEN %></eBayAuthToken>
-    </RequesterCredentials>
-  <Version>967</Version>
-  <ErrorLanguage>en_US</ErrorLanguage>
-  <WarningLevel>Low</WarningLevel>
-  <%= product %>
-</AddItemRequest>
-`)
+    root.att('xmlns', 'urn:ebay:apis:eBLBaseComponents')
+
+    root.ele(processed)
+
+    var xmlString = root.end({
+      pretty: true,
+      indent: '  ',
+      newline: '\n',
+      allowEmpty: false,
+      spacebeforeslash: ''
+    })
 
     var obj = {
-      template: template({product: product, opts: opts}),
-      numbers: number
+      template: xmlString,
+      numbers: product.number
     }
 
     resolve(obj)
