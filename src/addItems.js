@@ -1,9 +1,6 @@
-import Handlebars from 'handlebars'
-import fs from 'fs'
-import path from 'path'
 import sendXML from './sendXML'
-
-const templates = path.join((path.dirname(__dirname)), 'templates')
+import xml2js from 'xml2js'
+import _ from 'lodash'
 
 const opts = {
   EBAY_API: process.env['EBAY_API'],
@@ -14,40 +11,105 @@ const opts = {
   EMAIL: process.env['EMAIL']
 }
 
-export default function (raw, callback) {
-  fs.readFile(path.join(templates, 'addItems.xml'), 'utf-8', (err, src) => {
-    if (err) return console.error(err)
-    Handlebars.registerHelper('messageID', (result) => {
-      return result['data'].index + 1
+var builder = new xml2js.Builder({
+  pretty: true,
+  headless: true
+})
+
+export default async function (raw, callback) {
+  while (raw.length) {
+    let products = await configProducts(raw.splice(0, 5))
+    let xml = await configXML(products)
+    let response = await sendXML(xml, 'AddItems')
+    callback(null, response)
+  }
+}
+
+function configXML (products) {
+  return new Promise(function (resolve, reject) {
+    var template = _.template(`
+<?xml version="1.0" encoding="utf-8" ?>
+<AddItemsRequest xmlns="urn:ebay:apis:eBLBaseComponents">
+  <RequesterCredentials>
+    <eBayAuthToken><%- opts.EBAY_TOKEN %></eBayAuthToken>
+  </RequesterCredentials>
+  <Version>967</Version>
+  <ErrorLanguage>en_US</ErrorLanguage>
+  <WarningLevel>Low</WarningLevel>
+  <% _.forEach(products, function(product) { %><%= product.processed %>\n<%  }) %>
+</AddItemsRequest>
+`)
+
+    var arr = []
+
+    products.forEach(product => {
+      arr.push(product.number)
     })
 
-    Handlebars.registerHelper('categoryID', (result) => {
-      return '13677'
-    })
-
-    Handlebars.registerHelper('listingDuration', (result) => {
-      return 'Days_3'
-    })
-
-    Handlebars.registerHelper('buyItNowPrice', (result) => {
-      const products = result['data'].root.products
-      const price = parseInt(products[result['data'].key].price)
-
-      return (price + (price * 0.4)).toFixed(2)
-    })
-
-    while (raw.length) {
-      var products = raw.splice(0, 5)
-      const template = Handlebars.compile(src)
-      const output = template({
-        products: products,
-        opts: opts
-      })
-
-      sendXML(output, 'AddItems', (err, response) => {
-        if (err) return callback(err)
-        callback(null, response)
-      })
+    var obj = {
+      template: template({products: products, opts: opts}),
+      numbers: arr
     }
+
+    resolve(obj)
+  })
+}
+
+function configProducts (products) {
+  var retval = []
+  return new Promise(function (resolve, reject) {
+    products.forEach((product, v) => {
+      var processed = {
+        AddItemRequestContainer: {
+          MessageID: v + 1,
+          Item: {
+            Title: product.description,
+            Description: product.longDescription,
+            PrimaryCategory: {
+              CategoryID: '13677'
+            },
+            CategoryMappingAllowed: true,
+            Site: 'US',
+            Quantity: product.quantity,
+            StartPrice: product.price,
+            ListingDuration: 'Days_3',
+            DispatchTimeMax: 3,
+            ShippingDetails: {
+              ShippingType: 'Flat',
+              ShippingServiceOptions: {
+                ShippingServicePriority: 1,
+                ShippingService: 'USPSMedia',
+                ShippingServiceCost: '2.50',
+                ShippingServiceAdditionalCost: '0.50'
+              }
+            },
+            ReturnPolicy: {
+              ReturnsAcceptedOption: 'ReturnsAccepted',
+              RefundOption: 'MoneyBack',
+              ReturnsWithinOption: 'Days_30',
+              Description: 'Text Description of Return Policy',
+              ShippingCostPaidByOption: 'Buyer'
+            },
+            ListingType: 'FixedPriceItem',
+            Country: 'US',
+            Currency: 'USD',
+            PostalCode: '01243',
+            PaymentMethods: 'VisaMC',
+            PictureDetails: {
+              GalleryType: 'Gallery',
+              GalleryURL: product.image,
+              PictureURL: product.image
+            }
+          }
+        }
+      }
+
+      retval.push({
+        processed: builder.buildObject(processed),
+        number: product.number
+      })
+    })
+
+    resolve(retval)
   })
 }

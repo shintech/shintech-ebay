@@ -17,17 +17,22 @@ const opts = {
   EMAIL: process.env['EMAIL']
 }
 
-export default function (body, type, callback) {
-  got.post(ebayEnvironments[environment], {
+export default async function (raw, type) {
+  const { body } = await got.post(ebayEnvironments[environment], {
     method: 'POST',
-    body: body,
-    headers: getHeaders(opts, type)
+    body: raw.template,
+    headers: getHeaders(opts, type),
+    timeout: 100000
   })
-  .then(data => {
-    parseXMLResponse(data.body, callback)
-  })
-  .catch(err => {
-    callback(err)
+
+  return new Promise(function (resolve, reject) {
+    parseXMLResponse(body, (err, result) => {
+      if (err) reject(err)
+      resolve({
+        result: result,
+        numbers: raw.numbers
+      })
+    })
   })
 }
 

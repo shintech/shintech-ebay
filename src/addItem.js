@@ -1,9 +1,6 @@
-import Handlebars from 'handlebars'
-import fs from 'fs'
-import path from 'path'
 import sendXML from './sendXML'
-
-const templates = path.join((path.dirname(__dirname)), 'templates')
+import xml2js from 'xml2js'
+import _ from 'lodash'
 
 const opts = {
   EBAY_API: process.env['EBAY_API'],
@@ -14,37 +11,86 @@ const opts = {
   EMAIL: process.env['EMAIL']
 }
 
-export default function (raw, callback) {
-  fs.readFile(path.join(templates, 'addItem.xml'), 'utf-8', (err, src) => {
-    if (err) return console.error(err)
+var builder = new xml2js.Builder({
+  pretty: true,
+  headless: true
+})
 
-    Handlebars.registerHelper('categoryID', (result) => {
-      return '13677'
-    })
+export default async function (raw, callback) {
+  const product = await configProduct(raw)
+  const xml = await configXML(product, raw.number)
+  let response = await sendXML(xml, 'AddItem')
+  callback(null, response)
+}
 
-    Handlebars.registerHelper('listingDuration', (result) => {
-      return 'Days_3'
-    })
-
-    Handlebars.registerHelper('buyItNowPrice', (result) => {
-      const products = result['data'].root.products
-      const price = parseInt(products[result['data'].key].price)
-
-      return (price + (price * 0.4)).toFixed(2)
-    })
-
-    const template = Handlebars.compile(src)
-    const output = template({
-      product: raw,
-      opts: opts
-    })
-
-    sendXML(output, 'AddItem', (err, response) => {
-      if (err) return callback(err)
-      if (response['AddItemResponse'].Errors) {
-        return callback(response['AddItemResponse'].Errors)
+function configProduct (product) {
+  return new Promise(function (resolve, reject) {
+    var processed = {
+      Item: {
+        Title: product.description,
+        Description: product.longDescription,
+        PrimaryCategory: {
+          CategoryID: '13677'
+        },
+        CategoryMappingAllowed: true,
+        Site: 'US',
+        Quantity: product.quantity,
+        StartPrice: product.price,
+        ListingDuration: 'Days_3',
+        DispatchTimeMax: 3,
+        ShippingDetails: {
+          ShippingType: 'Flat',
+          ShippingServiceOptions: {
+            ShippingServicePriority: 1,
+            ShippingService: 'USPSMedia',
+            ShippingServiceCost: '2.50',
+            ShippingServiceAdditionalCost: '0.50'
+          }
+        },
+        ReturnPolicy: {
+          ReturnsAcceptedOption: 'ReturnsAccepted',
+          RefundOption: 'MoneyBack',
+          ReturnsWithinOption: 'Days_30',
+          Description: 'Text Description of Return Policy',
+          ShippingCostPaidByOption: 'Buyer'
+        },
+        ListingType: 'FixedPriceItem',
+        Country: 'US',
+        Currency: 'USD',
+        PostalCode: '01243',
+        PaymentMethods: 'VisaMC',
+        PictureDetails: {
+          GalleryType: 'Gallery',
+          GalleryURL: product.image,
+          PictureURL: product.image
+        }
       }
-      callback(null, response)
-    })
+    }
+
+    resolve(builder.buildObject(processed))
+  })
+}
+
+function configXML (product, number) {
+  return new Promise(function (resolve, reject) {
+    var template = _.template(`
+<?xml version="1.0" encoding="utf-8"?>
+<AddItemRequest xmlns="urn:ebay:apis:eBLBaseComponents">
+  <RequesterCredentials>
+      <eBayAuthToken><%- opts.EBAY_TOKEN %></eBayAuthToken>
+    </RequesterCredentials>
+  <Version>967</Version>
+  <ErrorLanguage>en_US</ErrorLanguage>
+  <WarningLevel>Low</WarningLevel>
+  <%= product %>
+</AddItemRequest>
+`)
+
+    var obj = {
+      template: template({product: product, opts: opts}),
+      numbers: number
+    }
+
+    resolve(obj)
   })
 }

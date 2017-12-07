@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ReviseInventoryStatusRequest xmlns="urn:ebay:apis:eBLBaseComponents">
+  <RequesterCredentials>
+    <eBayAuthToken>{{ opts.EBAY_TOKEN }}</eBayAuthToken>
+  </RequesterCredentials>
+  <Version>967</Version>
+  <ErrorLanguage>en_US</ErrorLanguage>
+  <WarningLevel>High</WarningLevel>
+  {{#each products}}
+    <InventoryStatus>
+      <SKU>{{ product.number }}</SKU>
+      <Quantity>{{ product.quantity }}</Quantity>
+    </InventoryStatus>
+  {{/each}}
+</ReviseInventoryStatusRequest>
