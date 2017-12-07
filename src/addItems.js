@@ -36,29 +36,24 @@ function configXML (products) {
   <Version>967</Version>
   <ErrorLanguage>en_US</ErrorLanguage>
   <WarningLevel>Low</WarningLevel>
-  <% _.forEach(products, function(product) { %><%= product.processed %>\n<%  }) %>
+  <% _.forEach(products, function(product) { %><%= product %>\n<%  }) %>
 </AddItemsRequest>
 `)
-
-    var arr = []
-
-    products.forEach(product => {
-      arr.push(product.number)
-    })
-
     var obj = {
-      template: template({products: products, opts: opts}),
-      numbers: arr
+      template: template({products: products.processed, opts: opts}),
+      numbers: products.numbers
     }
-
     resolve(obj)
   })
 }
 
 function configProducts (products) {
   var retval = []
+  var arr = []
   return new Promise(function (resolve, reject) {
     products.forEach((product, v) => {
+      arr.push(product.number)
+
       var processed = {
         AddItemRequestContainer: {
           MessageID: v + 1,
@@ -104,12 +99,12 @@ function configProducts (products) {
         }
       }
 
-      retval.push({
-        processed: builder.buildObject(processed),
-        number: product.number
-      })
+      retval.push(builder.buildObject(processed))
     })
 
-    resolve(retval)
+    resolve({
+      processed: retval,
+      numbers: arr
+    })
   })
 }
