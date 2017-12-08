@@ -1,6 +1,5 @@
 import sendXML from './sendXML'
-import xml2js from 'xml2js'
-import _ from 'lodash'
+import xmlbuilder from 'xmlbuilder'
 
 const opts = {
   EBAY_API: process.env['EBAY_API'],
@@ -11,46 +10,42 @@ const opts = {
   EMAIL: process.env['EMAIL']
 }
 
-var builder = new xml2js.Builder({
-  pretty: true,
-  headless: true
-})
-
 export default async function (raw, callback) {
   while (raw.length) {
     let products = await configProducts(raw.splice(0, 5))
-    let xml = await configXML(products)
-    let response = await sendXML(xml, 'AddItems')
+    let response = await sendXML(products, 'AddItems')
     callback(null, response)
   }
 }
 
-function configXML (products) {
-  return new Promise(function (resolve, reject) {
-    var template = _.template(`
-<?xml version="1.0" encoding="utf-8" ?>
-<AddItemsRequest xmlns="urn:ebay:apis:eBLBaseComponents">
-  <RequesterCredentials>
-    <eBayAuthToken><%- opts.EBAY_TOKEN %></eBayAuthToken>
-  </RequesterCredentials>
-  <Version>967</Version>
-  <ErrorLanguage>en_US</ErrorLanguage>
-  <WarningLevel>Low</WarningLevel>
-  <% _.forEach(products, function(product) { %><%= product %>\n<%  }) %>
-</AddItemsRequest>
-`)
-    var obj = {
-      template: template({products: products.processed, opts: opts}),
-      numbers: products.numbers
-    }
-    resolve(obj)
-  })
-}
-
 function configProducts (products) {
-  var retval = []
-  var arr = []
   return new Promise(function (resolve, reject) {
+    var base = {
+      RequesterCredentials: {
+        eBayAuthToken: opts.EBAY_TOKEN
+      },
+      Version: '967',
+      ErrorLanguage: 'en_US',
+      WarningLevel: 'Low'
+    }
+
+    var root = xmlbuilder.create('AddItemsRequest',
+      {version: '1.0', encoding: 'UTF-8'},
+      {pubID: null, sysID: null},
+      {skipNullAttributes: false,
+        headless: false,
+        ignoreDecorators: false,
+        separateArrayItems: false,
+        noDoubleEncoding: false,
+        stringify: {}}
+      )
+
+    root.att('xmlns', 'urn:ebay:apis:eBLBaseComponents')
+
+    root.ele(base)
+
+    var arr = []
+
     products.forEach((product, v) => {
       arr.push(product.number)
 
@@ -99,11 +94,19 @@ function configProducts (products) {
         }
       }
 
-      retval.push(builder.buildObject(processed))
+      root.ele(processed)
+    })
+
+    var xmlString = root.end({
+      pretty: true,
+      indent: '  ',
+      newline: '\n',
+      allowEmpty: false,
+      spacebeforeslash: ''
     })
 
     resolve({
-      processed: retval,
+      template: xmlString,
       numbers: arr
     })
   })
